@@ -15,3 +15,13 @@ type EnvFileYaml* = object
   description*: string
   package_manager*: PackageManagers
   launch_configration*: EnvFileYamlLaunchConfiguration
+
+
+type ErrorKind* = enum
+  fileDoesNotExists,
+  failedToLaunchAviutl,
+
+type Error* = object of CatchableError
+  case kind*: ErrorKind
+    of fileDoesNotExists, failedToLaunchAviutl:
+      path: string

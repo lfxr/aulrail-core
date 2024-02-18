@@ -1,9 +1,11 @@
 import
+  options,
   os,
   osproc
 
 import
   constants,
+  result,
   types,
   utils,
   yaml_file
@@ -48,19 +50,32 @@ func path*(env: ref Env): string =
   result = env.path
 
 
-proc launch*(env: ref Env) =
+proc launch*(env: ref Env): Result =
   ## 環境を起動する
   # envファイルを読み込む
   let
     envFileYaml = env.envFile.load
     launchConfiguration = envFileYaml.launch_configration
+    aviutlAppPath = launchConfiguration.aviutl_app_path
+  # AviUtlが存在しない場合はエラーを返す
+  if not aviutlAppPath.fileExists:
+    result.error = option(Error(
+      kind: ErrorKind.fileDoesNotExists,
+      path: aviutlAppPath
+    ))
   # AviUtlを起動する
-  discard execProcess(
-    "./" & launchConfiguration.aviutl_app_path,
-    workingDir=env.path,
-    args=launchConfiguration.args,
-    options={}
-  )
+  try:
+    discard execProcess(
+      "./" & aviutlAppPath,
+      workingDir=env.path,
+      args=launchConfiguration.args,
+      options={}
+    )
+  except:
+    result.error = option(Error(
+      kind: ErrorKind.failedToLaunchAviutl,
+      path: aviutlAppPath
+    ))
 
 
 proc launchPackageManager*(
