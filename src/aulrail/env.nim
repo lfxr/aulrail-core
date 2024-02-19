@@ -30,10 +30,14 @@ func init*(
       packageManager: PackageManagers,
     ],
     isForce: bool = false
-) =
+): Result =
   ## 環境を初期化する
+  # 環境ディレクトリがすでに存在する場合はエラーを返す
   if env.path.fileExists and not isForce:
-    echo "すでに環境が初期化されています"
+    result.error = option(Error(
+      kind: ErrorKind.dirAlreadyInitialized,
+      path: env.path
+    ))
   else:
     # envファイルを作成
     let envFileYaml = EnvFileYaml(

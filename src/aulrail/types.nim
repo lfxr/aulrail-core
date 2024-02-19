@@ -27,6 +27,7 @@ type ErrorKind* = enum
   apmIsNotInstalled,
   failedToLaunchPackageManager,
   processFailed,
+  dirAlreadyInitialized,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
@@ -35,7 +36,8 @@ type Error* = object of CatchableError
        dirAlreadyExists,
        failedToRemoveFile,
        apmIsNotInstalled,
-       failedToLaunchPackageManager:
+       failedToLaunchPackageManager,
+       dirAlreadyInitialized:
       path: string
     of failedToCopyDir:
       src: string
