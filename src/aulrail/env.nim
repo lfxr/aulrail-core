@@ -142,7 +142,7 @@ proc launchPackageManager*(
           ))
 
 
-proc openDir*(env: ref Env) =
+proc openDir*(env: ref Env): Result =
   ## 環境のディレクトリを開く
   openExplorer(env.path)
 

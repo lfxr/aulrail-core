@@ -26,6 +26,7 @@ type ErrorKind* = enum
   packageManagerIsNotSet,
   apmIsNotInstalled,
   failedToLaunchPackageManager,
+  processFailed,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
@@ -39,6 +40,8 @@ type Error* = object of CatchableError
     of failedToCopyDir:
       src: string
       dest: string
+    of processFailed:
+      message: string
     of packageManagerIsNotSet:
       discard
 
