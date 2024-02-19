@@ -83,7 +83,7 @@ proc launchPackageManager*(
     options: tuple[
       newWindow: bool = false
     ]
-) =
+): Result =
   ## パッケージマネージャを起動する
   # envファイルを読み込む
   let
@@ -91,14 +91,55 @@ proc launchPackageManager*(
   # envファイルで指定されたパッケージマネージャを起動する
   case envFileYaml.package_manager:
     of PackageManagers.none:
-      echo "パッケージマネージャが設定されていません"
+      # パッケージマネージャが設定されていないのでエラーを返す
+      result.error = option(Error(
+        kind: ErrorKind.packageManagerIsNotSet,
+      ))
     of PackageManagers.apm:
-      discard execProcess(apmExePath, options={})
-    of PackageManagers.butler:
-      if options.newWindow:
-        discard execShellCmd(butlerLaunchInNewWindowCommand(env.path))
+      # apmがインストールされていない場合はエラーを返す
+      if not apmExePath.fileExists:
+        result.error = option(Error(
+          kind: ErrorKind.apmIsNotInstalled,
+          path: apmExePath
+        ))
       else:
-        discard execCmd(butlerLanchCommand)
+        try:
+          discard execProcess(apmExePath, options={})
+        except:
+          result.error = option(Error(
+            kind: ErrorKind.failedToLaunchPackageManager,
+            path: apmExePath
+          ))
+    of PackageManagers.butler:
+      let butlerPsPath = butlerPsPath(env.path)
+      # butlerがインストールされていな場合はエラーを返す
+      if not butlerPsPath.fileExists:
+        result.error = option(Error(
+          kind: ErrorKind.butlerIsNotInstalled,
+          path: butlerPsPath
+        ))
+        return
+      if options.newWindow:
+        # butlerを新しいウィンドウで起動する
+        let butlerLaunchInNewWindowCommand =
+          butlerLaunchInNewWindowCommand(env.path)
+        try:
+          discard execShellCmd(butlerLaunchInNewWindowCommand)
+        except:
+          result.error = option(Error(
+            kind: ErrorKind.failedToLaunchPackageManager,
+            executedCommand: butlerLaunchInNewWindowCommand
+          ))
+      else:
+        # butlerを既存のウィンドウで起動する
+        let butlerLanchCommand = butlerLanchCommand(env.path)
+        try:
+          discard execCmd(butlerLanchCommand)
+        except:
+          result.error = option(Error(
+            kind: ErrorKind.failedToLaunchPackageManager,
+            executedCommand: butlerLanchCommand
+          ))
 
 
 proc openDir*(env: ref Env) =

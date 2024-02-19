@@ -23,14 +23,22 @@ type ErrorKind* = enum
   dirAlreadyExists,
   failedToCopyDir,
   failedToRemoveFile,
+  packageManagerIsNotSet,
+  apmIsNotInstalled,
+  failedToLaunchPackageManager,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
     of fileDoesNotExists,
        failedToLaunchAviutl,
        dirAlreadyExists,
-       failedToRemoveFile:
+       failedToRemoveFile,
+       apmIsNotInstalled,
+       failedToLaunchPackageManager:
       path: string
     of failedToCopyDir:
       src: string
       dest: string
+    of packageManagerIsNotSet:
+      discard
+
