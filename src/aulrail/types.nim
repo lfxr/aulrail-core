@@ -15,3 +15,35 @@ type EnvFileYaml* = object
   description*: string
   package_manager*: PackageManagers
   launch_configration*: EnvFileYamlLaunchConfiguration
+
+
+type ErrorKind* = enum
+  fileDoesNotExists,
+  failedToLaunchAviutl,
+  dirAlreadyExists,
+  failedToCopyDir,
+  failedToRemoveFile,
+  packageManagerIsNotSet,
+  apmIsNotInstalled,
+  failedToLaunchPackageManager,
+  processFailed,
+  dirAlreadyInitialized,
+
+type Error* = object of CatchableError
+  case kind*: ErrorKind
+    of fileDoesNotExists,
+       failedToLaunchAviutl,
+       dirAlreadyExists,
+       failedToRemoveFile,
+       apmIsNotInstalled,
+       failedToLaunchPackageManager,
+       dirAlreadyInitialized:
+      path: string
+    of failedToCopyDir:
+      src: string
+      dest: string
+    of processFailed:
+      message: string
+    of packageManagerIsNotSet:
+      discard
+
