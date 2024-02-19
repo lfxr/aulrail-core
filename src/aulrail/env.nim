@@ -127,7 +127,18 @@ proc dupelicate*(env: ref Env, newEnvDirName: string): Result =
       ))
 
 
-proc remove*(env: ref Env) =
+proc remove*(env: ref Env): Result =
   ## 環境を削除する
-  # envファイルを削除
-  removeFile(env.path / envFileName)
+  let envFilePath = env.envFile.path
+  # envファイルが存在しない場合はエラーを返す
+  if not envFilepath.fileExists:
+    result.error = option(Error(
+        kind: ErrorKind.fileDoesNotExists,
+        path: envFilePath
+    ))
+  # envファイルの削除に失敗した場合はエラーを返す
+  if not tryRemoveFile(envFilePath):
+    result.error = option(Error(
+        kind: ErrorKind.failedToRemoveFile,
+        path: envFilePath
+    ))

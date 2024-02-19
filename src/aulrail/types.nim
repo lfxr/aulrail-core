@@ -22,10 +22,14 @@ type ErrorKind* = enum
   failedToLaunchAviutl,
   dirAlreadyExists,
   failedToCopyDir,
+  failedToRemoveFile,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
-    of fileDoesNotExists, failedToLaunchAviutl, dirAlreadyExists:
+    of fileDoesNotExists,
+       failedToLaunchAviutl,
+       dirAlreadyExists,
+       failedToRemoveFile:
       path: string
     of failedToCopyDir:
       src: string
