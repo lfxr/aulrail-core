@@ -20,8 +20,13 @@ type EnvFileYaml* = object
 type ErrorKind* = enum
   fileDoesNotExists,
   failedToLaunchAviutl,
+  dirAlreadyExists,
+  failedToCopyDir,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
-    of fileDoesNotExists, failedToLaunchAviutl:
+    of fileDoesNotExists, failedToLaunchAviutl, dirAlreadyExists:
       path: string
+    of failedToCopyDir:
+      src: string
+      dest: string

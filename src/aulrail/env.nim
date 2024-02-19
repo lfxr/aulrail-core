@@ -106,13 +106,25 @@ proc openDir*(env: ref Env) =
   openExplorer(env.path)
 
 
-proc dupelicate*(env: ref Env, newEnvDirName: string) =
+proc dupelicate*(env: ref Env, newEnvDirName: string): Result =
   ## 環境を複製する
   let newEnvDirPath = env.path / newEnvDirName
-  if newEnvDirPath.fileExists:
-    echo "すでに同名のディレクトリが存在します"
+  # 新しい環境ディレクトリがすでに存在する場合はエラーを返す
+  if newEnvDirPath.dirExists:
+    result.error = option(Error(
+        kind: ErrorKind.dirAlreadyExists,
+        path: newEnvDirPath
+    ))
   else:
-    env.path.copyDir(newEnvDirPath)
+    # 環境ディレクトリを複製する
+    try:
+      env.path.copyDir(newEnvDirPath)
+    except:
+      result.error = option(Error(
+        kind: ErrorKind.failedToCopyDir,
+        src: env.path,
+        dest: newEnvDirPath
+      ))
 
 
 proc remove*(env: ref Env) =
