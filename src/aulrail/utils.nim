@@ -8,7 +8,7 @@ import
   types
 
 
-proc openExplorer*(path: string): Result =
+proc openExplorer*(path: string): Result[void] =
   if not path.fileExists:
     result.error = option(Error(
       kind: ErrorKind.fileDoesNotExists,
@@ -16,10 +16,9 @@ proc openExplorer*(path: string): Result =
     ))
     return
   try:
-    execProcess("explorer.exe", args=[path], options={poUsePath})
+    discard execProcess("explorer.exe", args=[path], options={poUsePath})
   except:
     result.error = option(Error(
       kind: ErrorKind.processFailed,
       message: getCurrentExceptionMsg()
     ))
-
