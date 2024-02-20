@@ -153,7 +153,7 @@ proc openDir*(env: ref Env): Result =
 
 proc dupelicate*(env: ref Env, newEnvDirName: string): Result =
   ## 環境を複製する
-  let newEnvDirPath = env.path / newEnvDirName
+  let newEnvDirPath = env.path.parentDir / newEnvDirName
   # 新しい環境ディレクトリがすでに存在する場合はエラーを返す
   if newEnvDirPath.dirExists:
     result.error = option(Error(
