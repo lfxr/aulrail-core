@@ -28,6 +28,7 @@ type ErrorKind* = enum
   failedToLaunchPackageManager,
   processFailed,
   dirAlreadyInitialized,
+  butlerIsNotInstalled,
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
@@ -36,14 +37,16 @@ type Error* = object of CatchableError
        dirAlreadyExists,
        failedToRemoveFile,
        apmIsNotInstalled,
-       failedToLaunchPackageManager,
-       dirAlreadyInitialized:
-      path: string
+       dirAlreadyInitialized,
+       butlerIsNotInstalled:
+      path*: string
     of failedToCopyDir:
-      src: string
-      dest: string
+      src*: string
+      dest*: string
     of processFailed:
-      message: string
+      message*: string
+    of failedToLaunchPackageManager:
+      executedCommand*: string
     of packageManagerIsNotSet:
       discard
 

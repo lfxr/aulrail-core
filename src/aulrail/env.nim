@@ -30,7 +30,7 @@ func init*(
       packageManager: PackageManagers,
     ],
     isForce: bool = false
-): Result =
+): Result[void] =
   ## 環境を初期化する
   # 環境ディレクトリがすでに存在する場合はエラーを返す
   if env.path.fileExists and not isForce:
@@ -54,7 +54,7 @@ func path*(env: ref Env): string =
   result = env.path
 
 
-proc launch*(env: ref Env): Result =
+proc launch*(env: ref Env): Result[void] =
   ## 環境を起動する
   # envファイルを読み込む
   let
@@ -87,7 +87,7 @@ proc launchPackageManager*(
     options: tuple[
       newWindow: bool = false
     ]
-): Result =
+): Result[void] =
   ## パッケージマネージャを起動する
   # envファイルを読み込む
   let
@@ -112,7 +112,7 @@ proc launchPackageManager*(
         except:
           result.error = option(Error(
             kind: ErrorKind.failedToLaunchPackageManager,
-            path: apmExePath
+            executedCommand: apmExePath
           ))
     of PackageManagers.butler:
       let butlerPsPath = butlerPsPath(env.path)
@@ -146,12 +146,12 @@ proc launchPackageManager*(
           ))
 
 
-proc openDir*(env: ref Env): Result =
+proc openDir*(env: ref Env): Result[void] =
   ## 環境のディレクトリを開く
   openExplorer(env.path)
 
 
-proc dupelicate*(env: ref Env, newEnvDirName: string): Result =
+proc dupelicate*(env: ref Env, newEnvDirName: string): Result[void] =
   ## 環境を複製する
   let newEnvDirPath = env.path.parentDir / newEnvDirName
   # 新しい環境ディレクトリがすでに存在する場合はエラーを返す
@@ -172,7 +172,7 @@ proc dupelicate*(env: ref Env, newEnvDirName: string): Result =
       ))
 
 
-proc remove*(env: ref Env): Result =
+proc remove*(env: ref Env): Result[void] =
   ## 環境を削除する
   let envFilePath = env.envFile.path
   # envファイルが存在しない場合はエラーを返す
