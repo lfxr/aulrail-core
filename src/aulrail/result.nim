@@ -11,3 +11,6 @@ type Result*[T] = object
 
 
 func isOk*(res: Result): bool = res.error.isNone
+
+
+func isError*(res: Result): bool = res.error.isSome
