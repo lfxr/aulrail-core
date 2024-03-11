@@ -3,10 +3,13 @@ import
   streams
 
 import
-  yaml
+  yaml,
+  yaml/presenter
 
 import
   constants,
+  options,
+  result,
   types
 
 
@@ -19,14 +22,47 @@ proc newEnvFile*(envPath: string): EnvFile =
   result.path = envPath / envFileName
 
 
-proc load*(envFile: EnvFile): EnvFileYaml =
-  let fileStream = newFileStream(envFile.path)
+proc load*(envFile: EnvFile): Result[EnvFileYaml] =
+  let envFilePath = envFile.path
+  if not envFilePath.fileExists:
+    result.error = option(Error(
+      kind: ErrorKind.fileDoesNotExists,
+      path: envFilePath
+    ))
+  let fileStream = newFileStream(envFilePath)
   var envFileYaml: EnvFileYaml
-  fileStream.load(envFileYaml)
+  try:
+    fileStream.load(envFileYaml)
+  except YamlConstructionError:
+    result.error = option(Error(
+      kind: ErrorKind.invalidYaml,
+      path: envFilePath
+    ))
+  except IOError as e:
+    result.error = option(Error(
+      kind: ErrorKind.ioError,
+      ioErrorObject: e
+    ))
+  except OSError as e:
+    result.error = option(Error(
+      kind: ErrorKind.osError,
+      osErrorObject: e
+    ))
   fileStream.close()
 
 
-proc save*(envFile: EnvFile, envFileYaml: EnvFileYaml) =
+proc save*(envFile: EnvFile, envFileYaml: EnvFileYaml): Result[void] =
   let fileStream = newFileStream(envFile.path, fmWrite)
-  Dumper().dump(envFileYaml, fileStream)
+  try:
+    Dumper().dump(envFileYaml, fileStream)
+  except YamlPresenterOutputError:
+    result.error = option(Error(
+      kind: ErrorKind.writingStreamError,
+      path: envFile.path
+    ))
+  except YamlPresenterJsonError, YamlSerializationError:
+    result.error = option(Error(
+      kind: ErrorKind.invalidYaml,
+      path: envFile.path
+    ))
   fileStream.close()

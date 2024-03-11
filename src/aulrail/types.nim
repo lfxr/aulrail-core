@@ -29,6 +29,11 @@ type ErrorKind* = enum
   processFailed,
   dirAlreadyInitialized,
   butlerIsNotInstalled,
+  invalidYaml,
+  ioError,
+  osError,
+  writingStreamError,
+
 
 type Error* = object of CatchableError
   case kind*: ErrorKind
@@ -38,7 +43,9 @@ type Error* = object of CatchableError
        failedToRemoveFile,
        apmIsNotInstalled,
        dirAlreadyInitialized,
-       butlerIsNotInstalled:
+       butlerIsNotInstalled,
+       invalidYaml,
+       writingStreamError:
       path*: string
     of failedToCopyDir:
       src*: string
@@ -49,4 +56,7 @@ type Error* = object of CatchableError
       executedCommand*: string
     of packageManagerIsNotSet:
       discard
-
+    of ioError:
+      ioErrorObject*: ref IOError
+    of osError:
+      osErrorObject*: ref OSError
