@@ -46,7 +46,10 @@ func init*(
       description: envData.description,
       package_manager: envData.packageManager
     )
-    env.envFile.save(envFileYaml)
+    let writingEnvFileYamlResult = env.envFile.save(envFileYaml)
+    if writingEnvFileYamlResult.isError:
+      result.error = writingEnvFileYamlResult.error
+      return
 
 
 func path*(env: ref Env): string =
@@ -57,9 +60,12 @@ func path*(env: ref Env): string =
 proc launch*(env: ref Env): Result[void] =
   ## 環境を起動する
   # envファイルを読み込む
+  let envFileYaml = env.envFile.load
+  if envFileYaml.isError:
+    result.error = envFileYaml.error
+    return
   let
-    envFileYaml = env.envFile.load
-    launchConfiguration = envFileYaml.launch_configration
+    launchConfiguration = envFileYaml.result.launch_configration
     aviutlAppPath = launchConfiguration.aviutl_app_path
   # AviUtlが存在しない場合はエラーを返す
   if not aviutlAppPath.fileExists:
@@ -90,10 +96,12 @@ proc launchPackageManager*(
 ): Result[void] =
   ## パッケージマネージャを起動する
   # envファイルを読み込む
-  let
-    envFileYaml = env.envFile.load
+  let envFileYaml = env.envFile.load
+  if envFileYaml.isError:
+    result.error = envFileYaml.error
+    return
   # envファイルで指定されたパッケージマネージャを起動する
-  case envFileYaml.package_manager:
+  case envFileYaml.result.package_manager:
     of PackageManagers.none:
       # パッケージマネージャが設定されていないのでエラーを返す
       result.error = option(Error(
