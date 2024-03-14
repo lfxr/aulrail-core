@@ -4,6 +4,10 @@ type PackageManagers* = enum
   butler = "butler"
 
 
+type PackageManager* = object of RootObj
+  appPath*: string
+
+
 type EnvFileYamlLaunchConfiguration* = object
   aviutl_app_path*: string
   args*: seq[string]
