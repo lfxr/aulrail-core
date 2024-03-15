@@ -37,6 +37,7 @@ type ErrorKind* = enum
   ioError,
   osError,
   writingStreamError,
+  pacakgeManagerIsNotInstalled,
 
 
 type Error* = object of CatchableError
@@ -49,7 +50,8 @@ type Error* = object of CatchableError
        dirAlreadyInitialized,
        butlerIsNotInstalled,
        invalidYaml,
-       writingStreamError:
+       writingStreamError,
+       pacakgeManagerIsNotInstalled:
       path*: string
     of failedToCopyDir:
       src*: string
