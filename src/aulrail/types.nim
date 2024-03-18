@@ -30,6 +30,7 @@ type ErrorKind* = enum
   packageManagerIsNotSet,
   apmIsNotInstalled,
   failedToLaunchPackageManager,
+  failedToUpdatePackages,
   processFailed,
   dirAlreadyInitialized,
   butlerIsNotInstalled,
@@ -58,7 +59,8 @@ type Error* = object of CatchableError
       dest*: string
     of processFailed:
       message*: string
-    of failedToLaunchPackageManager:
+    of failedToLaunchPackageManager,
+       failedToUpdatePackages:
       executedCommand*: string
     of packageManagerIsNotSet:
       discard

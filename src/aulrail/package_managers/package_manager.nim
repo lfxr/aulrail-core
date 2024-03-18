@@ -28,3 +28,8 @@ proc launch*(pm: ref PackageManager): Result[void] =
       kind: ErrorKind.failedToLaunchPackageManager,
       executedCommand: pm.appPath
     ))
+
+
+method updatePackages*(pm: ref PackageManager): Result[void] {.base.} =
+  ## パッケージを更新
+  result = pm.launch()

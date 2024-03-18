@@ -13,7 +13,9 @@ type Butler* = object of PackageManager
     ps, bat: string
   ]
   commands: tuple[
-    launchInNewWindow, launchInCurrentWindow: string
+    launchInNewWindow,
+    launchInCurrentWindow,
+    updatePackages: string
   ]
 
 
@@ -25,9 +27,12 @@ func newButler*(envPath: string): ref Butler =
     bat: envPath / ".butler/butler.bat"
   )
   result.appPath = result.appPaths.bat
+  let launchInCurrentWindowCommand =
+    "pwsh -ExecutionPolicy Bypass " & result.appPaths.ps
   result.commands = (
     launchInNewWindow: "start " & result.appPaths.bat,
-    launchInCurrentWindow: "pwsh -ExecutionPolicy Bypass " & result.appPaths.ps
+    launchInCurrentWindow: launchInCurrentWindowCommand,
+    updatePackages: launchInCurrentWindowCommand & " upgrade\npause",
   )
 
 
@@ -69,3 +74,15 @@ proc launch*(
     pm.launchInCurrentWindow
   else:
     pm.launchInNewWindow
+
+
+method updatePackages*(pm: ref Butler): Result[void] =
+  ## BUtlerでパッケージを更新する
+  let updatePackagesCommand = pm.commands.updatePackages
+  try:
+    discard execShellCmd(updatePackagesCommand)
+  except:
+    result.error = option(Error(
+      kind: ErrorKind.failedToUpdatePackages,
+      executedCommand: updatePackagesCommand
+    ))
