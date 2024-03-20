@@ -4,6 +4,10 @@ type PackageManagers* = enum
   butler = "butler"
 
 
+type PackageManager* = object of RootObj
+  appPath*: string
+
+
 type EnvFileYamlLaunchConfiguration* = object
   aviutl_app_path*: string
   args*: seq[string]
@@ -26,6 +30,8 @@ type ErrorKind* = enum
   packageManagerIsNotSet,
   apmIsNotInstalled,
   failedToLaunchPackageManager,
+  failedToUpdatePackages,
+  failedToUpdatePackageManager,
   processFailed,
   dirAlreadyInitialized,
   butlerIsNotInstalled,
@@ -33,6 +39,7 @@ type ErrorKind* = enum
   ioError,
   osError,
   writingStreamError,
+  pacakgeManagerIsNotInstalled,
 
 
 type Error* = object of CatchableError
@@ -45,14 +52,17 @@ type Error* = object of CatchableError
        dirAlreadyInitialized,
        butlerIsNotInstalled,
        invalidYaml,
-       writingStreamError:
+       writingStreamError,
+       pacakgeManagerIsNotInstalled:
       path*: string
     of failedToCopyDir:
       src*: string
       dest*: string
     of processFailed:
       message*: string
-    of failedToLaunchPackageManager:
+    of failedToLaunchPackageManager,
+       failedToUpdatePackages,
+       failedToUpdatePackageManager:
       executedCommand*: string
     of packageManagerIsNotSet:
       discard

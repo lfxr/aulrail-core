@@ -13,3 +13,4 @@ const
   butlerLanchCommand* =
     func (envPath: string): string =
       "pwsh -ExecutionPolicy Bypass " & butlerPsPath(envPath)
+  pauseCommand* = "pause"
