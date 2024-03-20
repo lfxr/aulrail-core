@@ -4,6 +4,7 @@ import
 
 import
   options,
+  ../constants,
   ../result,
   ../types
 
@@ -15,7 +16,8 @@ type Butler* = object of PackageManager
   commands: tuple[
     launchInNewWindow,
     launchInCurrentWindow,
-    updatePackages: string
+    updatePackages,
+    updateSelf: string
   ]
 
 
@@ -32,7 +34,8 @@ func newButler*(envPath: string): ref Butler =
   result.commands = (
     launchInNewWindow: "start " & result.appPaths.bat,
     launchInCurrentWindow: launchInCurrentWindowCommand,
-    updatePackages: launchInCurrentWindowCommand & " upgrade\npause",
+    updatePackages: launchInCurrentWindowCommand & " upgrade\n" & pauseCommand,
+    updateSelf: launchInCurrentWindowCommand & " selfupgrade\n" & pauseCommand,
   )
 
 
@@ -85,4 +88,16 @@ method updatePackages*(pm: ref Butler): Result[void] =
     result.error = option(Error(
       kind: ErrorKind.failedToUpdatePackages,
       executedCommand: updatePackagesCommand
+    ))
+
+
+method updateSelf*(pm: ref Butler): Result[void] =
+  ## BUtler自体を更新する
+  let updateSelfCommand = pm.commands.updateSelf
+  try:
+    discard execShellCmd(updateSelfCommand)
+  except:
+    result.error = option(Error(
+      kind: ErrorKind.failedToUpdatePackageManager,
+      executedCommand: updateSelfCommand
     ))

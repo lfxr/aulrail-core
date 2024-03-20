@@ -33,3 +33,8 @@ proc launch*(pm: ref PackageManager): Result[void] =
 method updatePackages*(pm: ref PackageManager): Result[void] {.base.} =
   ## パッケージを更新
   result = pm.launch()
+
+
+method updateSelf*(pm: ref PackageManager): Result[void] {.base.} =
+  ## PackageManager自体を更新
+  result = pm.launch()
