@@ -29,6 +29,7 @@ proc load*(envFile: EnvFile): Result[EnvFileYaml] =
       kind: ErrorKind.fileDoesNotExists,
       path: envFilePath
     ))
+    return
   let fileStream = newFileStream(envFilePath)
   var envFileYaml: EnvFileYaml
   try:
