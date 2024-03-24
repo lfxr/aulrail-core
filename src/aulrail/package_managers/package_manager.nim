@@ -13,7 +13,7 @@ func newPackageManager*(appPath: string): ref PackageManager =
   result.appPath = appPath
 
 
-proc launch*(pm: ref PackageManager): Result[void] =
+method launch*(pm: ref PackageManager): Result[void] {.base.} =
   ## PackageManagerを起動
   if not pm.appPath.fileExists:
     result.error = option(Error(

@@ -50,6 +50,7 @@ proc load*(envFile: EnvFile): Result[EnvFileYaml] =
       osErrorObject: e
     ))
   fileStream.close()
+  result.result = envFileyaml
 
 
 proc save*(envFile: EnvFile, envFileYaml: EnvFileYaml): Result[void] =
