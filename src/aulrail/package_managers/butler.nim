@@ -63,9 +63,9 @@ proc launchInNewWindow(pm: ref Butler): Result[void] =
     ))
 
 
-proc launch*(
+method launch*(
     pm: ref Butler,
-    options: tuple[inCurrentWindow: bool = false]
+    options: tuple[inCurrentWindow: bool] = (inCurrentWindow: false)
 ): Result[void] =
   ## BUtlerを起動する
   if not (pm.appPaths.ps.fileExists and pm.appPaths.bat.fileExists):
@@ -73,10 +73,12 @@ proc launch*(
       kind: ErrorKind.pacakgeManagerIsNotInstalled,
       path: pm.appPath
     ))
-  if options.inCurrentWindow:
-    pm.launchInCurrentWindow
-  else:
-    pm.launchInNewWindow
+    return
+  return
+    if options.inCurrentWindow:
+      pm.launchInCurrentWindow
+    else:
+      pm.launchInNewWindow
 
 
 method updatePackages*(pm: ref Butler): Result[void] =

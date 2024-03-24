@@ -5,6 +5,7 @@ import
 
 import
   constants,
+  package_manager,
   result,
   types,
   utils,
@@ -101,6 +102,7 @@ proc launchPackageManager*(
     result.error = envFileYaml.error
     return
   # envファイルで指定されたパッケージマネージャを起動する
+  echo envFileYaml.result
   case envFileYaml.result.package_manager:
     of PackageManagers.none:
       # パッケージマネージャが設定されていないのでエラーを返す
@@ -108,50 +110,11 @@ proc launchPackageManager*(
         kind: ErrorKind.packageManagerIsNotSet,
       ))
     of PackageManagers.apm:
-      # apmがインストールされていない場合はエラーを返す
-      if not apmExePath.fileExists:
-        result.error = option(Error(
-          kind: ErrorKind.apmIsNotInstalled,
-          path: apmExePath
-        ))
-      else:
-        try:
-          discard execProcess(apmExePath, options={})
-        except:
-          result.error = option(Error(
-            kind: ErrorKind.failedToLaunchPackageManager,
-            executedCommand: apmExePath
-          ))
+      return newApm().launch()
     of PackageManagers.butler:
-      let butlerPsPath = butlerPsPath(env.path)
-      # butlerがインストールされていな場合はエラーを返す
-      if not butlerPsPath.fileExists:
-        result.error = option(Error(
-          kind: ErrorKind.butlerIsNotInstalled,
-          path: butlerPsPath
-        ))
-        return
-      if options.newWindow:
-        # butlerを新しいウィンドウで起動する
-        let butlerLaunchInNewWindowCommand =
-          butlerLaunchInNewWindowCommand(env.path)
-        try:
-          discard execShellCmd(butlerLaunchInNewWindowCommand)
-        except:
-          result.error = option(Error(
-            kind: ErrorKind.failedToLaunchPackageManager,
-            executedCommand: butlerLaunchInNewWindowCommand
-          ))
-      else:
-        # butlerを既存のウィンドウで起動する
-        let butlerLanchCommand = butlerLanchCommand(env.path)
-        try:
-          discard execCmd(butlerLanchCommand)
-        except:
-          result.error = option(Error(
-            kind: ErrorKind.failedToLaunchPackageManager,
-            executedCommand: butlerLanchCommand
-          ))
+      return newButler(env.path).launch(
+        options = (inCurrentWindow: not options.newWindow)
+      )
 
 
 proc openDir*(env: ref Env): Result[void] =
