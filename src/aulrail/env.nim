@@ -89,32 +89,21 @@ proc launch*(env: ref Env): Result[void] =
     ))
 
 
-proc launchPackageManager*(
-    env: ref Env,
-    options: tuple[
-      newWindow: bool = false
-    ]
-): Result[void] =
-  ## パッケージマネージャを起動する
-  # envファイルを読み込む
+proc packageManager*(env: ref Env): Result[ref PackageManager] =
+  ## 環境のパッケージマネージャを取得する
   let envFileYaml = env.envFile.load
   if envFileYaml.isError:
     result.error = envFileYaml.error
     return
-  # envファイルで指定されたパッケージマネージャを起動する
-  echo envFileYaml.result
   case envFileYaml.result.package_manager:
     of PackageManagers.none:
-      # パッケージマネージャが設定されていないのでエラーを返す
       result.error = option(Error(
         kind: ErrorKind.packageManagerIsNotSet,
       ))
     of PackageManagers.apm:
-      return newApm().launch()
+      result.result = newApm()
     of PackageManagers.butler:
-      return newButler(env.path).launch(
-        options = (inCurrentWindow: not options.newWindow)
-      )
+      result.result = newButler(env.path)
 
 
 proc openDir*(env: ref Env): Result[void] =
