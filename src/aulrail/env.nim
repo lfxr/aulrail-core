@@ -89,6 +89,23 @@ proc launch*(env: ref Env): Result[void] =
     ))
 
 
+proc packageManager*(env: ref Env): Result[ref PackageManager] =
+  ## 環境のパッケージマネージャを取得する
+  let envFileYaml = env.envFile.load
+  if envFileYaml.isError:
+    result.error = envFileYaml.error
+    return
+  case envFileYaml.result.package_manager:
+    of PackageManagers.none:
+      result.error = option(Error(
+        kind: ErrorKind.packageManagerIsNotSet,
+      ))
+    of PackageManagers.apm:
+      result.result = newApm()
+    of PackageManagers.butler:
+      result.result = newButler(env.path)
+
+
 proc launchPackageManager*(
     env: ref Env,
     options: tuple[
