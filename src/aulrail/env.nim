@@ -86,7 +86,7 @@ func init*(
 ): Result[void] =
   ## 環境を初期化する
   # 環境ディレクトリがすでに存在する場合はエラーを返す
-  if env.path.fileExists and not isForce:
+  if env.isInitialized and not isForce:
     result.error = option(Error(
       kind: ErrorKind.dirAlreadyInitialized,
       path: env.path
