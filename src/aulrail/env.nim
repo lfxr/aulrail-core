@@ -12,6 +12,12 @@ import
   yaml_file
 
 
+const DummyCoreVersions = (
+  aviutl: "1.10",
+  exedit: "0.92"
+)
+
+
 type Env = object
   path: string
   envFile: EnvFile
@@ -26,6 +32,17 @@ func newEnv*(path: string): ref Env =
 proc isInitialized*(env: ref Env): bool =
   ## 環境が初期化されているかどうかを返す
   return env.envFile.path.fileExists
+
+
+proc detectAulCoreVersions*(env: ref Env): Result[CoreVersions] =
+  ## 使用されているAviUtl本体と拡張編集のバージョンを検出する
+  if not env.isInitialized:
+    result.error = option(Error(
+      kind: ErrorKind.envNotInitialized,
+      path: env.path
+    ))
+    return
+  result.result = DummyCoreVersions
 
 
 proc detectPackageManager*(env: ref Env): Result[PackageManagers] =
