@@ -4,6 +4,10 @@ type PackageManagers* = enum
   butler = "butler"
 
 
+type CoreVersions* = tuple
+  aviutl, exedit: string
+
+
 type PackageManager* = object of RootObj
   appPath*: string
   usedInEnvEvidenceFilePath*: string
