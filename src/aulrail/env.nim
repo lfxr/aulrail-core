@@ -91,18 +91,18 @@ func init*(
       kind: ErrorKind.dirAlreadyInitialized,
       path: env.path
     ))
-  else:
-    # envファイルを作成
-    let envFileYaml = EnvFileYaml(
-      aulrail_core_version: aulrailCoreVersion,
-      name: envData.name,
-      description: envData.description,
-      package_manager: envData.packageManager
-    )
-    let writingEnvFileYamlResult = env.envFile.save(envFileYaml)
-    if writingEnvFileYamlResult.isError:
-      result.error = writingEnvFileYamlResult.error
-      return
+    return
+  # envファイルを作成
+  let envFileYaml = EnvFileYaml(
+    aulrail_core_version: aulrailCoreVersion,
+    name: envData.name,
+    description: envData.description,
+    package_manager: envData.packageManager
+  )
+  let writingEnvFileYamlResult = env.envFile.save(envFileYaml)
+  if writingEnvFileYamlResult.isError:
+    result.error = writingEnvFileYamlResult.error
+    return
 
 
 func path*(env: ref Env): string =
