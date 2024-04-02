@@ -23,6 +23,41 @@ func newEnv*(path: string): ref Env =
   result.envFile = newEnvFile(path)
 
 
+proc isInitialized*(env: ref Env): bool =
+  ## 環境が初期化されているかどうかを返す
+  return env.envFile.path.fileExists
+
+
+proc detectPackageManager*(env: ref Env): Result[PackageManagers] =
+  ## 使用されているパッケージマネージャーを検出する
+  if not env.isInitialized:
+    result.error = option(Error(
+      kind: ErrorKind.envNotInitialized,
+      path: env.path
+    ))
+    return
+  let packageManagers = [
+    (
+      packageManager: PackageManagers.apm,
+      evidenceFilePath: newApm().usedInEnvEvidenceFilePath
+    ),
+    (
+      packageManager: PackageManagers.butler,
+      evidenceFilePath: newButler("").usedInEnvEvidenceFilePath
+    )
+  ]
+  # 環境のディレクトリを再帰的に探索してパッケージマネージャーの証拠ファイルがあるか調べる
+  for file in walkDirRec(env.path, relative = true):
+    for packageManager in packageManagers:
+      if file == packageManager.evidenceFilePath:
+        result.result = packageManager.packageManager
+        return
+
+  # パッケージマネージャーの証拠ファイルが見つからなかった場合は,
+  # パッケージマネージャーが設定されていないと判断する
+  result.result = PackageManagers.none
+
+
 func init*(
     env: ref Env,
     envData = tuple[

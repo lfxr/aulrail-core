@@ -29,6 +29,7 @@ func newButler*(envPath: string): ref Butler =
     bat: envPath / ".butler/butler.bat"
   )
   result.appPath = result.appPaths.bat
+  result.usedInEnvEvidenceFilePath = ".butler/butler.ps1"
   let launchInCurrentWindowCommand =
     "pwsh -ExecutionPolicy Bypass " & result.appPaths.ps
   result.commands = (

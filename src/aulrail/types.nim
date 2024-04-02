@@ -6,6 +6,7 @@ type PackageManagers* = enum
 
 type PackageManager* = object of RootObj
   appPath*: string
+  usedInEnvEvidenceFilePath*: string
 
 
 type EnvFileYamlLaunchConfiguration* = object
@@ -38,6 +39,7 @@ type ErrorKind* = enum
   osError,
   writingStreamError,
   pacakgeManagerIsNotInstalled,
+  envNotInitialized,
 
 
 type Error* = object of CatchableError
@@ -49,7 +51,8 @@ type Error* = object of CatchableError
        dirAlreadyInitialized,
        invalidYaml,
        writingStreamError,
-       pacakgeManagerIsNotInstalled:
+       pacakgeManagerIsNotInstalled,
+       envNotInitialized:
       path*: string
     of failedToCopyDir:
       src*: string
