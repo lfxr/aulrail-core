@@ -28,6 +28,7 @@ type EnvFileYaml* = object
 
 type ErrorKind* = enum
   fileDoesNotExists,
+  dirDoesNotExists,
   failedToLaunchAviutl,
   dirAlreadyExists,
   failedToCopyDir,
@@ -49,6 +50,7 @@ type ErrorKind* = enum
 type Error* = object of CatchableError
   case kind*: ErrorKind
     of fileDoesNotExists,
+       dirDoesNotExists,
        failedToLaunchAviutl,
        dirAlreadyExists,
        failedToRemoveFile,
