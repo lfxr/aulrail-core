@@ -1,7 +1,8 @@
 import
   options,
   os,
-  osproc
+  osproc,
+  sequtils
 
 import
   constants,
@@ -34,25 +35,13 @@ proc isInitialized*(env: ref Env): bool =
   return env.envFile.path.fileExists
 
 
-proc detectAulCoreVersions*(env: ref Env): Result[CoreVersions] =
+proc detectAulCoreVersions*(env: ref Env): CoreVersions =
   ## 使用されているAviUtl本体と拡張編集のバージョンを検出する
-  if not env.isInitialized:
-    result.error = option(Error(
-      kind: ErrorKind.envNotInitialized,
-      path: env.path
-    ))
-    return
-  result.result = DummyCoreVersions
+  return DummyCoreVersions
 
 
-proc detectPackageManager*(env: ref Env): Result[PackageManagers] =
+proc detectPackageManager*(env: ref Env): PackageManagers =
   ## 使用されているパッケージマネージャーを検出する
-  if not env.isInitialized:
-    result.error = option(Error(
-      kind: ErrorKind.envNotInitialized,
-      path: env.path
-    ))
-    return
   let packageManagers = [
     (
       packageManager: PackageManagers.apm,
@@ -67,17 +56,38 @@ proc detectPackageManager*(env: ref Env): Result[PackageManagers] =
   for file in walkDirRec(env.path, relative = true):
     for packageManager in packageManagers:
       if file == packageManager.evidenceFilePath:
-        result.result = packageManager.packageManager
-        return
+        return packageManager.packageManager
 
   # パッケージマネージャーの証拠ファイルが見つからなかった場合は,
   # パッケージマネージャーが設定されていないと判断する
-  result.result = PackageManagers.none
+  return PackageManagers.none
 
 
-func init*(
+proc isSetUp*(env: ref Env): bool =
+  ## 環境がセットアップ済みかどうかを返す
+  # パッケージマネージャーが検出された場合にはセットアップ済みと判断する
+  if env.detectPackageManager != PackageManagers.none:
+    return true
+  # AviUtl・Exedit本体のファイルが1つでも存在する場合には,
+  # セットアップ済みと判断する
+  const AulCoreEvidenceFilePaths = [
+    "aviutl.exe",
+    "aviutl.sav",
+    "exedit.anm",
+    "exedit.auf",
+    "exedit.auo",
+    "exedit.cam",
+    "exedit.ini",
+    "exedit.obj",
+    "exedit.scn",
+    "exedit.tra",
+  ]
+  return AulCoreEvidenceFilePaths.filterIt(fileExists(env.path / it)).len > 0
+
+
+proc init*(
     env: ref Env,
-    envData = tuple[
+    envData: tuple[
       name: string,
       description: string = "",
       packageManager: PackageManagers,
@@ -92,17 +102,30 @@ func init*(
       path: env.path
     ))
     return
-  # envファイルを作成
-  let envFileYaml = EnvFileYaml(
-    aulrail_core_version: aulrailCoreVersion,
-    name: envData.name,
-    description: envData.description,
-    package_manager: envData.packageManager
-  )
-  let writingEnvFileYamlResult = env.envFile.save(envFileYaml)
-  if writingEnvFileYamlResult.isError:
-    result.error = writingEnvFileYamlResult.error
+  if not env.path.dirExists:
+    result.error = option(Error(
+      kind: ErrorKind.dirDoesNotExists,
+      path: env.path
+    ))
     return
+  # envファイルを作成
+  if env.isSetUp:
+    # 環境がセットアップ済みの場合,
+    # AviUtlのコアのバージョンとパッケージマネージャーを検出し,
+    # envファイルを作成する
+    let envFileYaml = EnvFileYaml(
+      aulrail_core_version: aulrailCoreVersion,
+      name: envData.name,
+      description: envData.description,
+      package_manager: env.detectPackageManager, 
+    )
+    let writingEnvFileYamlResult = env.envFile.save(envFileYaml)
+    if writingEnvFileYamlResult.isError:
+      result.error = writingEnvFileYamlResult.error
+      return
+  else:
+    # TODO: implement later
+    discard
 
 
 func path*(env: ref Env): string =
