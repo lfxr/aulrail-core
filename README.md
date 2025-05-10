@@ -1,0 +1,5 @@
+# aulrail core
+
+## License
+
+MIT
